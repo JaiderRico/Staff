@@ -1,49 +1,17 @@
-// main.js - VERSIÓN MEJORADA CON MEJORES MENSAJES
+// main.js - VERSIÓN ESTABLE SOLO LOCALSTORAGE
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 Sistema de testimonios cargado en Netlify');
 
   const testimonialsList = document.getElementById('testimonials-list');
   const testimonialForm = document.getElementById('add-testimonial');
 
-  // Cargar testimonios
+  // ✅ Cargar testimonios solo desde caché local
   function loadTestimonials() {
-    console.log('📥 Cargando testimonios...');
-    loadFromCache();
-  }
-
-  // Guardar testimonio
-  async function saveTestimonial(name, text, email = '') {
-    console.log('💾 Guardando testimonio...');
-    return saveToCache(name, text, email);
-  }
-
-  function saveToCache(name, text, email) {
-    const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
-    const newTestimonial = {
-      id: Date.now(),
-      name: name,
-      text: text,
-      email: email,
-      timestamp: new Date().toISOString(),
-      status: 'Aprobado',
-      source: 'website'
-    };
-    
-    cached.unshift(newTestimonial);
-    localStorage.setItem('testimonials_cache', JSON.stringify(cached));
-    
-    return { 
-      success: true, 
-      source: 'cache', 
-      message: '✅ ¡Gracias por tu testimonio! Se ha guardado correctamente y aparece en la lista.' 
-    };
-  }
-
-  function loadFromCache() {
+    console.log('📥 Cargando desde almacenamiento local...');
     const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
     
     if (cached.length === 0) {
-      // Datos de ejemplo más profesionales
+      // Datos de ejemplo iniciales
       const samples = [
         {
           id: 1,
@@ -60,17 +28,54 @@ document.addEventListener('DOMContentLoaded', function() {
           timestamp: new Date('2024-10-05').toISOString(),
           source: 'ejemplo',
           status: 'Aprobado'
+        },
+        {
+          id: 3,
+          name: "Roberto Silva - Consultoría Empresarial",
+          text: "Soporte excepcional en inglés y español. Han sido clave para nuestro expansion internacional.",
+          timestamp: new Date('2024-09-28').toISOString(),
+          source: 'ejemplo', 
+          status: 'Aprobado'
         }
       ];
       displayTestimonials(samples);
       localStorage.setItem('testimonials_cache', JSON.stringify(samples));
+      console.log('📝 3 testimonios de ejemplo cargados');
     } else {
       displayTestimonials(cached);
+      console.log('📝', cached.length, 'testimonios cargados desde almacenamiento local');
     }
   }
 
+  // ✅ Guardar testimonio solo en caché local
+  async function saveTestimonial(name, text, email = '') {
+    console.log('💾 Guardando en almacenamiento local...');
+    
+    const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
+    const newTestimonial = {
+      id: Date.now(),
+      name: name,
+      text: text,
+      email: email,
+      timestamp: new Date().toISOString(),
+      status: 'Aprobado',
+      source: 'website'
+    };
+    
+    cached.unshift(newTestimonial);
+    localStorage.setItem('testimonials_cache', JSON.stringify(cached));
+    
+    return { 
+      success: true,
+      message: '✅ ¡Gracias por tu testimonio! Se ha guardado correctamente y ya está visible en la lista.' 
+    };
+  }
+
   function displayTestimonials(testimonials) {
-    if (!testimonialsList) return;
+    if (!testimonialsList) {
+      console.error('❌ Elemento testimonials-list no encontrado');
+      return;
+    }
     
     testimonialsList.innerHTML = '';
     
@@ -98,13 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
       bubble.innerHTML = `
         <div class="testimonial-author">${testimonial.name || 'Anónimo'}</div>
         <div class="testimonial-text">${testimonial.text || ''}</div>
-        <div class="testimonial-time">${timeAgo} ${isExample ? '• Ejemplo' : ''}</div>
+        <div class="testimonial-time">${timeAgo} ${isExample ? '• Ejemplo' : '• Reciente'}</div>
       `;
       
       testimonialsList.appendChild(bubble);
     });
-    
-    console.log('✅', testimonials.length, 'testimonios mostrados');
   }
 
   function getTimeAgo(date) {
@@ -123,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return `Hace ${Math.round(diffDays/30)} meses`;
   }
 
-  // Manejar formulario con mejor UX
+  // Manejar formulario
   if (testimonialForm) {
     testimonialForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -133,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const emailInput = testimonialForm.querySelector('[name="email"]');
       const email = emailInput ? emailInput.value.trim() : '';
       
+      // Validaciones
       if (!name || !text) {
         showMessage('❌ Por favor completa nombre y testimonio', 'error');
         return;
@@ -143,22 +147,32 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
+      if (text.length > 500) {
+        showMessage('❌ El testimonio es demasiado largo (máximo 500 caracteres)', 'error');
+        return;
+      }
+      
+      // Deshabilitar botón durante envío
       const submitBtn = testimonialForm.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
       submitBtn.disabled = true;
       
       try {
         const result = await saveTestimonial(name, text, email);
         showMessage(result.message, 'success');
         
+        // Limpiar formulario
         testimonialForm.reset();
+        
+        // Recargar testimonios para mostrar el nuevo
         loadTestimonials();
         
       } catch (error) {
         showMessage('❌ Error inesperado al guardar', 'error');
         console.error('Error en submit:', error);
       } finally {
+        // Restaurar botón
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
       }
@@ -167,16 +181,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Función para mostrar mensajes bonitos
   function showMessage(message, type = 'info') {
-    // Crear elemento de mensaje
+    // Eliminar mensajes existentes
+    const existingMessages = document.querySelectorAll('.custom-message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    // Crear nuevo mensaje
     const messageEl = document.createElement('div');
-    messageEl.className = `message ${type}`;
+    messageEl.className = `custom-message ${type}`;
     messageEl.innerHTML = `
       <div class="message-content">
         ${message}
       </div>
     `;
     
-    // Estilos para el mensaje
+    // Estilos
     messageEl.style.cssText = `
       position: fixed;
       top: 20px;
@@ -188,14 +206,16 @@ document.addEventListener('DOMContentLoaded', function() {
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       z-index: 10000;
       max-width: 300px;
-      animation: slideIn 0.3s ease;
+      animation: slideInRight 0.3s ease;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
     `;
     
     document.body.appendChild(messageEl);
     
     // Auto-remover después de 4 segundos
     setTimeout(() => {
-      messageEl.style.animation = 'slideOut 0.3s ease';
+      messageEl.style.animation = 'slideOutRight 0.3s ease';
       setTimeout(() => {
         if (messageEl.parentNode) {
           messageEl.parentNode.removeChild(messageEl);
@@ -204,30 +224,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 4000);
   }
 
-  // Inicializar
+  // Inicializar sistema
   if (testimonialsList) {
     loadTestimonials();
   }
 
-  console.log('🎉 Sistema de testimonios listo');
+  console.log('🎉 Sistema de testimonios completamente inicializado');
+  console.log('💡 Modo: Almacenamiento local (estable y confiable)');
 });
 
-// Agregar estilos CSS para las animaciones
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-  }
-  
-  .message {
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-  }
-`;
-document.head.appendChild(style);
+// Agregar estilos CSS para animaciones
+if (!document.querySelector('#custom-message-styles')) {
+  const style = document.createElement('style');
+  style.id = 'custom-message-styles';
+  style.textContent = `
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+}
