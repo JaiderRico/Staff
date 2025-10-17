@@ -1,4 +1,4 @@
-// main.js - VERSIÓN OPTIMIZADA PARA NETLIFY
+// main.js - VERSIÓN CORREGIDA PARA CORS EN NETLIFY
 document.addEventListener('DOMContentLoaded', function() {
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxudhXW5dv0DjaeM11VjfhhmuYtLi58DEKtULVV_O1p0WZLjurCXOfca8YtwSrF48oA60/exec';
 
@@ -8,15 +8,23 @@ document.addEventListener('DOMContentLoaded', function() {
   const testimonialsList = document.getElementById('testimonials-list');
   const testimonialForm = document.getElementById('add-testimonial');
 
-  // Cargar testimonios desde Google Sheets
+  // ✅ SOLUCIÓN CORS - Usar modo 'no-cors' o proxy
   async function loadTestimonials() {
     console.log('📥 Cargando desde Google Sheets...');
     
     try {
-      const response = await fetch(GOOGLE_SCRIPT_URL);
+      // Opción 1: Usar proxy CORS
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      const targetUrl = GOOGLE_SCRIPT_URL;
+      
+      const response = await fetch(proxyUrl + targetUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
       
       console.log('📊 Response status:', response.status);
-      console.log('📊 Response ok:', response.ok);
       
       if (response.ok) {
         const testimonials = await response.json();
@@ -26,22 +34,18 @@ document.addEventListener('DOMContentLoaded', function() {
           displayTestimonials(testimonials);
           localStorage.setItem('testimonials_cache', JSON.stringify(testimonials));
           return;
-        } else {
-          console.log('📭 Google Sheets vacío');
         }
-      } else {
-        console.error('❌ HTTP Error:', response.status);
       }
     } catch (error) {
       console.error('💥 Error cargando Google Sheets:', error);
     }
     
-    // Fallback a caché local
-    console.log('🔄 Usando caché local...');
+    // ✅ Fallback a caché local si hay error CORS
+    console.log('🔄 Usando caché local (fallback por CORS)...');
     loadFromCache();
   }
 
-  // Guardar en Google Sheets
+  // ✅ Guardar en Google Sheets con solución CORS
   async function saveTestimonial(name, text, email = '') {
     console.log('💾 Intentando guardar en Google Sheets...');
     
@@ -54,17 +58,17 @@ document.addEventListener('DOMContentLoaded', function() {
         timestamp: new Date().toISOString()
       };
 
-      console.log('📤 Payload:', payload);
+      // Usar proxy para evitar CORS
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      const targetUrl = GOOGLE_SCRIPT_URL;
       
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
+      const response = await fetch(proxyUrl + targetUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
       });
-      
-      console.log('📥 Response status:', response.status);
       
       if (response.ok) {
         const result = await response.json();
@@ -74,15 +78,13 @@ document.addEventListener('DOMContentLoaded', function() {
           source: 'google_sheets', 
           message: '✅ Testimonio guardado correctamente' 
         };
-      } else {
-        console.error('❌ Google Sheets - HTTP error:', response.status);
       }
     } catch (error) {
-      console.error('💥 Google Sheets - Error:', error);
+      console.error('💥 Google Sheets - Error CORS:', error);
     }
     
-    // Fallback a localStorage
-    console.log('🔄 Guardando en caché local...');
+    // ✅ Fallback a localStorage si hay CORS
+    console.log('🔄 Guardando en caché local (fallback CORS)...');
     return saveToCache(name, text, email);
   }
 
@@ -103,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return { 
       success: true, 
       source: 'cache', 
-      message: '📝 Testimonio guardado localmente' 
+      message: '📝 Testimonio guardado localmente (se sincronizará después)' 
     };
   }
 
@@ -127,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       ];
       displayTestimonials(samples);
+      localStorage.setItem('testimonials_cache', JSON.stringify(samples));
     } else {
       displayTestimonials(cached);
     }
@@ -160,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
       bubble.innerHTML = `
         <div class="testimonial-author">${testimonial.name || 'Anónimo'}</div>
         <div class="testimonial-text">${testimonial.text || ''}</div>
-        <div class="testimonial-time">${timeAgo}</div>
+        <div class="testimonial-time">${timeAgo} • ${testimonial.source || 'sistema'}</div>
       `;
       
       testimonialsList.appendChild(bubble);
