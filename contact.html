@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contacto — International Remote Staff</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    (function(){
+      // Reemplaza con tu ID real de EmailJS
+      emailjs.init("6VIPQtcxOGuBFbszl"); 
+       })();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Estilos adicionales para mejorar la página */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .contact-item {
+      display: flex;
+      gap: 15px;
+      align-items: flex-start;
+      padding: 20px;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease;
+    }
+
+    .contact-item:hover {
+      transform: translateY(-5px);
+    }
+
+    .contact-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 1.2rem;
+    }
+
+    .contact-info {
+      flex: 1;
+    }
+
+    .contact-info strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-dark);
+    }
+    
+    /* Mejoras responsivas */
+    @media (max-width: 768px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .contact-item {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .contact-icon {
+        align-self: center;
+      }
+    }
+    
+    /* Estados de carga para el formulario */
+    .btn-loading {
+      position: relative;
+      color: transparent !important;
+    }
+    
+    .btn-loading::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50%;
+      left: 50%;
+      margin-left: -10px;
+      margin-top: -10px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s ease infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="brand container">International Remote Staff</div>
+      <div class="container nav-container">
+        <div></div>
+        <div class="nav-icons">
+          <a href="index.html" title="Home"><i class="fas fa-home"></i></a>
+          <a href="services.html" title="Services"><i class="fas fa-concierge-bell"></i></a>
+          <a href="about.html" title="About"><i class="fas fa-info-circle"></i></a>
+          <a href="testimonials.html" title="Testimonials"><i class="fas fa-star"></i></a>
+          <a href="contact.html" title="Contact"><i class="fas fa-envelope"></i></a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h1>Contáctanos</h1>
+      <p class="muted">¿Listo para potenciar tu equipo con talento bilingüe? Completa el formulario y nos pondremos en contacto contigo en menos de 24 horas.</p>
+
+      <form id="contact-form" style="margin-top: 24px;">
+        <div class="form-group">
+          <label for="name" class="form-label">Nombre completo *</label>
+          <input type="text" id="name" name="from_name" class="form-input" placeholder="Tu nombre completo" required>
+        </div>
+
+        <div class="form-group">
+          <label for="company" class="form-label">Empresa</label>
+          <input type="text" id="company" name="from_company" class="form-input" placeholder="Nombre de tu empresa" >
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">Email *</label>
+          <input type="email" id="email" name="from_email" class="form-input" placeholder="tu@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="message" class="form-label">Mensaje *</label>
+          <textarea id="message" name="message" class="form-input form-textarea" placeholder="Cuéntanos sobre tus necesidades, tipo de apoyo requerido, horarios preferidos, etc." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            <i class="fas fa-paper-plane"></i> Enviar mensaje
+          </button>
+        </div>
+      </form>
+
+      <div class="card contact-methods" style="margin-top: 30px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(30, 64, 175, 0.02));">
+        <h3>Otros métodos de contacto</h3>
+        <p class="muted">¿Prefieres contactarnos directamente? Estamos disponibles en estas plataformas:</p>
+        
+        <div class="contact-grid" style="margin-top: 20px;">
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fab fa-linkedin"></i>
+            </div>
+            <div class="contact-info">
+              <strong>LinkedIn</strong>
+              <p class="muted small">Conéctate con nosotros profesionalmente</p>
+              <a href="https://linkedin.com/company/international-remote-staff" class="btn btn-outline" style="color: var(--primary-blue); border-color: var(--primary-blue); margin-top: 8px; padding: 8px 16px;">
+                Seguir
+              </a>
+            </div>
+          </div>
+          
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fab fa-whatsapp"></i>
+            </div>
+            <div class="contact-info">
+              <strong>WhatsApp</strong>
+              <p class="muted small">Respuesta rápida por mensaje</p>
+              <a href="https://wa.me/1234567890" class="btn btn-outline" style="color: var(--primary-blue); border-color: var(--primary-blue); margin-top: 8px; padding: 8px 16px;">
+                Escribir
+              </a>
+            </div>
+          </div>
+          
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="contact-info">
+              <strong>Email directo</strong>
+              <p class="muted small">Para consultas detalladas</p>
+              <a href="mailto:jaider.grico@gmail.com" class="btn btn-outline" style="color: var(--primary-blue); border-color: var(--primary-blue); margin-top: 8px; padding: 8px 16px;">
+                Enviar email
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p class="footer-text">© 2025 International Remote Staff</p>
+      <div class="social-links">
+        <a href="https://linkedin.com/company/international-remote-staff" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+        <a href="https://wa.me/1234567890" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://instagram.com/internationalremotestaff" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="mailto:jaider.grico@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Chat bubble -->
+  <div class="chat-container">
+    <div id="chat-bubble" class="chat-bubble">
+      <i class="fas fa-comments"></i>
+    </div>
+    <div id="chat-window" class="chat-window">
+      <div class="chat-header">
+        <span>Asistente Virtual</span>
+        <button id="chat-close" class="chat-close"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="chat-messages" class="chat-messages">
+        <div class="message bot-message">
+          <div class="message-content">
+            ¡Hola! ¿En qué puedo ayudarte con nuestros servicios de staff remoto?
+          </div>
+          <div class="message-time">Justo ahora</div>
+        </div>
+      </div>
+      <div class="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Escribe tu mensaje...">
+        <button id="chat-send" class="chat-send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Container -->
+  <div id="notification-container" class="notification-container"></div>
+
+  <script>
+    // Funcionalidad del formulario de contacto
+    document.addEventListener('DOMContentLoaded', function() {
+      const contactForm = document.getElementById('contact-form');
+      const submitBtn = document.getElementById('submit-btn');
+      
+      if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          // Mostrar estado de carga
+          submitBtn.classList.add('btn-loading');
+          submitBtn.disabled = true;
+          
+          // Enviar formulario con EmailJS
+          emailjs.sendForm('service_84s3c58', 'template_go4188l', this)
+            .then(function() {
+              // Éxito
+              Swal.fire({
+                icon: 'success',
+                title: '¡Mensaje enviado!',
+                text: 'Te contactaremos en menos de 24 horas.',
+                confirmButtonColor: '#1e40af'
+              });
+              
+              // Limpiar formulario
+              contactForm.reset();
+            })
+            .catch(function(error) {
+              // Error
+              console.error('Error:', error);
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Hubo un problema al enviar el mensaje. Por favor, inténtalo de nuevo o usa otro método de contacto.',
+                confirmButtonColor: '#dc2626'
+              });
+            })
+            .finally(function() {
+              // Restaurar botón
+              submitBtn.classList.remove('btn-loading');
+              submitBtn.disabled = false;
+            });
+        });
+      }
+      
+      // Funcionalidad básica del chat
+      const chatBubble = document.getElementById('chat-bubble');
+      const chatWindow = document.getElementById('chat-window');
+      const chatClose = document.getElementById('chat-close');
+      const chatSend = document.getElementById('chat-send');
+      const chatInput = document.getElementById('chat-input');
+      const chatMessages = document.getElementById('chat-messages');
+      
+      if (chatBubble && chatWindow) {
+        // Abrir/cerrar chat
+        chatBubble.addEventListener('click', function() {
+          chatWindow.style.display = 'block';
+          chatBubble.style.display = 'none';
+        });
+        
+        chatClose.addEventListener('click', function() {
+          chatWindow.style.display = 'none';
+          chatBubble.style.display = 'flex';
+        });
+        
+        // Enviar mensaje
+        function sendMessage() {
+          const message = chatInput.value.trim();
+          if (message) {
+            // Agregar mensaje del usuario
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.innerHTML = `
+              <div class="message-content">${message}</div>
+              <div class="message-time">Justo ahora</div>
+            `;
+            chatMessages.appendChild(userMessage);
+            
+            // Limpiar input
+            chatInput.value = '';
+            
+            // Scroll hacia abajo
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Simular respuesta del bot después de un breve retraso
+            setTimeout(function() {
+              const botMessage = document.createElement('div');
+              botMessage.className = 'message bot-message';
+              botMessage.innerHTML = `
+                <div class="message-content">Gracias por tu mensaje. Para una atención más personalizada, te recomendamos completar el formulario de contacto o escribirnos directamente por WhatsApp.</div>
+                <div class="message-time">Justo ahora</div>
+              `;
+              chatMessages.appendChild(botMessage);
+              
+              // Scroll hacia abajo
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+          }
+        }
+        
+        chatSend.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            sendMessage();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
