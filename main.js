@@ -1,4 +1,4 @@
-// main.js - VERSIÓN CORREGIDA PARA CORS EN NETLIFY
+// main.js - VERSIÓN SIN PROXY EXTERNO
 document.addEventListener('DOMContentLoaded', function() {
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxudhXW5dv0DjaeM11VjfhhmuYtLi58DEKtULVV_O1p0WZLjurCXOfca8YtwSrF48oA60/exec';
 
@@ -8,44 +8,78 @@ document.addEventListener('DOMContentLoaded', function() {
   const testimonialsList = document.getElementById('testimonials-list');
   const testimonialForm = document.getElementById('add-testimonial');
 
-  // ✅ SOLUCIÓN CORS - Usar modo 'no-cors' o proxy
+  // ✅ SOLUCIÓN: Usar Google Apps Script como API web directamente
   async function loadTestimonials() {
-    console.log('📥 Cargando desde Google Sheets...');
+    console.log('📥 Intentando cargar desde Google Sheets...');
     
     try {
-      // Opción 1: Usar proxy CORS
-      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-      const targetUrl = GOOGLE_SCRIPT_URL;
-      
-      const response = await fetch(proxyUrl + targetUrl, {
+      // Opción directa - puede funcionar en algunos casos
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'GET',
+        mode: 'no-cors', // ✅ Modo no-cors para solo ver si responde
         headers: {
-          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         }
       });
       
-      console.log('📊 Response status:', response.status);
+      // Con 'no-cors' no podemos leer la respuesta, pero podemos intentar
+      console.log('📊 Request enviado (no-cors mode)');
       
-      if (response.ok) {
-        const testimonials = await response.json();
-        console.log('✅ Google Sheets - testimonios recibidos:', testimonials);
-        
-        if (testimonials && testimonials.length > 0) {
-          displayTestimonials(testimonials);
-          localStorage.setItem('testimonials_cache', JSON.stringify(testimonials));
-          return;
-        }
-      }
+      // Intentar con método alternativo
+      await tryAlternativeLoad();
+      
     } catch (error) {
-      console.error('💥 Error cargando Google Sheets:', error);
+      console.error('💥 Error en carga principal:', error);
+      fallbackToCache();
     }
-    
-    // ✅ Fallback a caché local si hay error CORS
-    console.log('🔄 Usando caché local (fallback por CORS)...');
+  }
+
+  // ✅ Método alternativo usando JSONP
+  async function tryAlternativeLoad() {
+    try {
+      // Crear script JSONP
+      return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+        const script = document.createElement('script');
+        
+        window[callbackName] = function(data) {
+          delete window[callbackName];
+          document.body.removeChild(script);
+          
+          if (data && data.length > 0) {
+            console.log('✅ JSONP - testimonios recibidos:', data);
+            displayTestimonials(data);
+            localStorage.setItem('testimonials_cache', JSON.stringify(data));
+            resolve(data);
+          } else {
+            reject(new Error('No data received'));
+          }
+        };
+        
+        script.src = GOOGLE_SCRIPT_URL + '?callback=' + callbackName;
+        document.body.appendChild(script);
+        
+        // Timeout después de 5 segundos
+        setTimeout(() => {
+          if (window[callbackName]) {
+            delete window[callbackName];
+            document.body.removeChild(script);
+            reject(new Error('JSONP timeout'));
+          }
+        }, 5000);
+      });
+    } catch (error) {
+      console.log('❌ JSONP falló:', error);
+      fallbackToCache();
+    }
+  }
+
+  function fallbackToCache() {
+    console.log('🔄 Usando caché local...');
     loadFromCache();
   }
 
-  // ✅ Guardar en Google Sheets con solución CORS
+  // ✅ Guardar testimonio
   async function saveTestimonial(name, text, email = '') {
     console.log('💾 Intentando guardar en Google Sheets...');
     
@@ -58,80 +92,87 @@ document.addEventListener('DOMContentLoaded', function() {
         timestamp: new Date().toISOString()
       };
 
-      // Usar proxy para evitar CORS
-      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-      const targetUrl = GOOGLE_SCRIPT_URL;
+      // Intentar con FormData (mejor compatibilidad con Google Apps Script)
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(payload));
       
-      const response = await fetch(proxyUrl + targetUrl, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
+        mode: 'no-cors',
+        body: formData
       });
       
-      if (response.ok) {
-        const result = await response.json();
-        console.log('🎉 Google Sheets - guardado exitoso:', result);
-        return { 
-          success: true, 
-          source: 'google_sheets', 
-          message: '✅ Testimonio guardado correctamente' 
-        };
-      }
+      console.log('📤 Datos enviados (no-cors mode)');
+      
+      // Como no podemos ver la respuesta, asumimos éxito y guardamos en caché
+      return await saveToCache(name, text, email);
+      
     } catch (error) {
-      console.error('💥 Google Sheets - Error CORS:', error);
+      console.error('💥 Error al guardar:', error);
+      return await saveToCache(name, text, email);
     }
-    
-    // ✅ Fallback a localStorage si hay CORS
-    console.log('🔄 Guardando en caché local (fallback CORS)...');
-    return saveToCache(name, text, email);
   }
 
   function saveToCache(name, text, email) {
     const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
     const newTestimonial = {
+      id: Date.now(),
       name: name,
       text: text,
       email: email,
       timestamp: new Date().toISOString(),
-      status: 'Aprobado',
+      status: 'Pendiente',
       source: 'cached'
     };
     
     cached.unshift(newTestimonial);
     localStorage.setItem('testimonials_cache', JSON.stringify(cached));
     
+    // También guardar en una lista de pendientes para sincronizar después
+    savePendingTestimonial(newTestimonial);
+    
     return { 
       success: true, 
       source: 'cache', 
-      message: '📝 Testimonio guardado localmente (se sincronizará después)' 
+      message: '📝 Testimonio guardado localmente. Se sincronizará cuando sea posible.' 
     };
+  }
+
+  function savePendingTestimonial(testimonial) {
+    const pending = JSON.parse(localStorage.getItem('pending_testimonials') || '[]');
+    pending.push(testimonial);
+    localStorage.setItem('pending_testimonials', JSON.stringify(pending));
   }
 
   function loadFromCache() {
     const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
     
     if (cached.length === 0) {
-      // Datos de ejemplo
+      // Datos de ejemplo iniciales
       const samples = [
         {
+          id: 1,
           name: "Cliente Satisfecho - Empresa",
           text: "Servicio excelente y profesional. Muy recomendado para soporte bilingüe.",
           timestamp: new Date('2024-01-15').toISOString(),
-          source: 'ejemplo'
+          source: 'ejemplo',
+          status: 'Aprobado'
         },
         {
+          id: 2,
           name: "Ana Martínez - Legal Solutions", 
           text: "Comunicación fluida y resultados excelentes. Nuestros clientes están muy contentos.",
           timestamp: new Date('2024-01-10').toISOString(),
-          source: 'ejemplo'
+          source: 'ejemplo',
+          status: 'Aprobado'
         }
       ];
       displayTestimonials(samples);
       localStorage.setItem('testimonials_cache', JSON.stringify(samples));
+      console.log('📝 Datos de ejemplo cargados');
     } else {
       displayTestimonials(cached);
+      console.log('📝', cached.length, 'testimonios cargados desde caché');
     }
   }
 
@@ -154,30 +195,37 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
+    // Ordenar por fecha (más recientes primero)
+    testimonials.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
     testimonials.forEach((testimonial, index) => {
       const bubble = document.createElement('div');
       bubble.className = `testimonial-bubble ${index % 2 === 0 ? 'client' : 'staff'}`;
       
-      const timeAgo = getTimeAgo(new Date(testimonial.timestamp || testimonial.date));
+      const timeAgo = getTimeAgo(new Date(testimonial.timestamp));
+      const statusBadge = testimonial.status === 'Pendiente' ? '⏳ ' : '';
+      const sourceInfo = testimonial.source === 'ejemplo' ? ' (ejemplo)' : '';
       
       bubble.innerHTML = `
-        <div class="testimonial-author">${testimonial.name || 'Anónimo'}</div>
+        <div class="testimonial-author">${statusBadge}${testimonial.name || 'Anónimo'}${sourceInfo}</div>
         <div class="testimonial-text">${testimonial.text || ''}</div>
-        <div class="testimonial-time">${timeAgo} • ${testimonial.source || 'sistema'}</div>
+        <div class="testimonial-time">${timeAgo}</div>
       `;
       
       testimonialsList.appendChild(bubble);
     });
-    
-    console.log('✅', testimonials.length, 'testimonios mostrados');
   }
 
   function getTimeAgo(date) {
     const now = new Date();
     const diffMs = now - date;
+    const diffMins = Math.round(diffMs / (1000 * 60));
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
     const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) return 'Hoy';
+    if (diffMins < 1) return 'Ahora mismo';
+    if (diffMins < 60) return `Hace ${diffMins} min`;
+    if (diffHours < 24) return `Hace ${diffHours} horas`;
     if (diffDays === 1) return 'Ayer';
     if (diffDays < 7) return `Hace ${diffDays} días`;
     if (diffDays < 30) return `Hace ${Math.round(diffDays/7)} semanas`;
@@ -232,4 +280,5 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   console.log('🎉 Sistema completamente inicializado en Netlify');
+  console.log('💡 Modo: Almacenamiento local + intento de sincronización con Google Sheets');
 });
