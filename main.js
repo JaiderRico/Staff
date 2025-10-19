@@ -85,26 +85,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxudhXWSdvQDjaeM11VjfhhmuYtLi58DEKtULVV_OlpQW2LjurCXQfca8YtwSrF48oA6Q/exec';
 
     // Cargar testimonios
-    async function loadTestimonials() {
-      console.log('📥 Cargando testimonios...');
-      try {
-        const response = await fetch(WEB_APP_URL + '?t=' + new Date().getTime());
-        const testimonialsFromSheets = await response.json();
+async function loadTestimonials() {
+  console.log('📥 Cargando testimonios...');
+  try {
+    const response = await fetch(WEB_APP_URL + '?t=' + new Date().getTime());
+    const testimonialsFromSheets = await response.json();
 
-        if (Array.isArray(testimonialsFromSheets) && testimonialsFromSheets.length > 0) {
-          console.log('📊 Testimonios cargados:', testimonialsFromSheets.length);
-          displayTestimonials(testimonialsFromSheets);
-          localStorage.setItem('testimonials_cache', JSON.stringify(testimonialsFromSheets));
-        } else {
-          throw new Error('No hay testimonios');
-        }
-      } catch (error) {
-        console.log('❌ Error cargando desde Sheets:', error);
-        const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
-        console.log('📝 Usando caché local:', cached.length);
-        displayTestimonials(cached);
-      }
+    // Filtrar solo válidos (nombre y texto)
+    const validTestimonials = Array.isArray(testimonialsFromSheets)
+      ? testimonialsFromSheets.filter(t => t.name && t.text && t.status === 'Aprobado')
+      : [];
+
+    if (validTestimonials.length === 0) {
+      console.log('📭 No hay testimonios válidos');
+      testimonialsList.innerHTML = `
+        <div class="testimonial-empty">
+          <p>No hay testimonios disponibles por ahora.</p>
+        </div>
+      `;
+      return;
     }
+
+    // Guardar caché limpio y mostrar
+    localStorage.setItem('testimonials_cache', JSON.stringify(validTestimonials));
+    displayTestimonials(validTestimonials);
+  } catch (error) {
+    console.log('❌ Error cargando desde Google Sheets:', error);
+
+    // Si hay caché y es válido, úsalo; si no, nada
+    const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]')
+      .filter(t => t.name && t.text);
+    
+    if (cached.length > 0) {
+      console.log('📝 Mostrando testimonios del caché:', cached.length);
+      displayTestimonials(cached);
+    } else {
+      testimonialsList.innerHTML = `
+        <div class="testimonial-empty">
+          <p>No hay testimonios disponibles por ahora.</p>
+        </div>
+      `;
+    }
+  }
+}
+
 
     // Guardar testimonio
     async function saveTestimonial(name, text, email = '') {
