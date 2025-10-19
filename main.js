@@ -98,31 +98,35 @@ function initializeTestimonials() {
   const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxudhXWSdvQDjaeM11VjfhhmuYtLi58DEKtULVV_OlpQW2LjurCXQfca8YtwSrF48oA6Q/exec';
 
   // ✅ Cargar testimonios desde Google Sheets Y caché local
-  async function loadTestimonials() {
-    console.log('📥 Cargando testimonios...');
+// ✅ Cargar testimonios desde Google Sheets IGNORANDO caché local
+async function loadTestimonials() {
+  console.log('📥 Cargando testimonios...');
+  
+  try {
+    // Intentar cargar desde Google Sheets (SIEMPRE)
+    const response = await fetch(WEB_APP_URL + '?t=' + new Date().getTime());
+    const testimonialsFromSheets = await response.json();
     
-    try {
-      // Intentar cargar desde Google Sheets
-      const response = await fetch(WEB_APP_URL);
-      const testimonialsFromSheets = await response.json();
+    if (Array.isArray(testimonialsFromSheets) && testimonialsFromSheets.length > 0) {
+      console.log('📊 Testimonios cargados desde Google Sheets:', testimonialsFromSheets.length);
+      console.log('📝 Contenido:', testimonialsFromSheets);
+      displayTestimonials(testimonialsFromSheets);
       
-      if (Array.isArray(testimonialsFromSheets) && testimonialsFromSheets.length > 0) {
-        console.log('📊 Testimonios cargados desde Google Sheets:', testimonialsFromSheets.length);
-        displayTestimonials(testimonialsFromSheets);
-        
-        // Actualizar caché local
-        localStorage.setItem('testimonials_cache', JSON.stringify(testimonialsFromSheets));
-        return;
-      }
-    } catch (error) {
-      console.log('❌ Error cargando desde Google Sheets, usando caché local:', error);
+      // Actualizar caché local con los datos CORRECTOS
+      localStorage.setItem('testimonials_cache', JSON.stringify(testimonialsFromSheets));
+      return;
+    } else {
+      throw new Error('No hay testimonios en Google Sheets');
     }
+  } catch (error) {
+    console.log('❌ Error cargando desde Google Sheets:', error);
     
-    // Fallback a caché local
+    // Fallback a caché local SOLO si hay error real
     const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
     console.log('📝 Usando testimonios de caché local:', cached.length);
     displayTestimonials(cached);
   }
+}
 
   // ✅ Guardar testimonio en Google Sheets Y caché local
   async function saveTestimonial(name, text, email = '') {
@@ -217,7 +221,7 @@ function initializeTestimonials() {
       t.status === 'Aprobado' || !t.status // Incluir los que no tienen status definido
     );
     
-    approvedTestimonials.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+approvedTestimonials.sort((a, b) => new Date(a.timestamp) < new Date(b.timestamp) ? 1 : -1);
     
     approvedTestimonials.forEach((testimonial, index) => {
       const bubble = document.createElement('div');
@@ -400,3 +404,22 @@ function initializeTestimonials() {
   
   console.log('🎉 Todos los sistemas inicializados correctamente');
 });
+
+// Función de debug para ver qué se está cargando
+function debugTestimonials() {
+  const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
+  console.log('🔍 DEBUG - Testimonios en caché:', cached);
+  
+  // Probar carga directa desde Google Sheets
+  fetch(WEB_APP_URL + '?t=' + new Date().getTime())
+    .then(response => response.json())
+    .then(data => {
+      console.log('🔍 DEBUG - Testimonios desde Google Sheets:', data);
+    })
+    .catch(error => {
+      console.log('🔍 DEBUG - Error cargando desde Sheets:', error);
+    });
+}
+
+// Ejecutar debug al cargar la página
+setTimeout(debugTestimonials, 2000);
