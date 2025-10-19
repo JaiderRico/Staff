@@ -1,19 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="icon" type="image/x-icon" href="image/logoblanco.ico">
-  <title>Testimonios — Qualified International Staff</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script defer src="main.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testimonios - Staff Remoto Bilingüe</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <header>
+    <!-- Header -->
+    <header>
     <nav>
-      <div class="brand container">
+      <div class="brand container"> 
         <img src="image/logoblanco.ico" alt="Qualified International Staff Logo" class="nav-logo">
         Qualified International Staff</div>
       <div class="container nav-container">
@@ -27,101 +25,114 @@
         </div>
       </div>
     </nav>
-  </header>
+    </header>
 
-  <main class="container">
-    <div class="card">
-      <h1>Testimonios</h1>
-      <p class="muted">Lo que dicen nuestros clientes y partners</p>
-
-      <!-- AÑADIR ESTE ID QUE EL JS BUSCA -->
-      <div id="testimonials-list" class="testimonial-chat">
-        <!-- Testimonials loaded from localStorage/Google Sheets -->
-      </div>
-
-      <div class="card testimonial-form-card" style="margin-top: 30px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(30, 64, 175, 0.02));">
-        <h3><i class="fas fa-edit"></i> Agregar testimonio</h3>
-        <p class="muted small">Comparte tu experiencia trabajando con nosotros</p>
-        
-        <!-- AÑADIR ID Y CAMPOS QUE EL JS ESPERA -->
-        <form id="add-testimonial" class="testimonial-form" style="margin-top: 20px;">
-          <div class="form-group">
-            <label for="testimonial-name" class="form-label">Tu nombre o empresa *</label>
-            <input type="text" id="testimonial-name" name="name" class="form-input" placeholder="Ej: María González - LegalCorp Inc." required>
-          </div>
-          
-          <!-- CAMPO EMAIL OPCIONAL QUE EL JS MANEJA -->
-          <div class="form-group">
-            <label for="testimonial-email" class="form-label">Email (opcional)</label>
-            <input type="email" id="testimonial-email" name="email" class="form-input" placeholder="tu@email.com">
-          </div>
-          
-          <div class="form-group">
-            <label for="testimonial-text" class="form-label">Tu testimonio *</label>
-            <textarea id="testimonial-text" name="text" class="form-input form-textarea" placeholder="Comparte tu experiencia, cómo te ayudamos, qué valor agregamos a tu negocio..." rows="4" required></textarea>
-          </div>
-          
-          <div class="form-group">
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-share"></i> Publicar testimonio
-            </button>
-          </div>
-        </form>
-        
-        <p class="muted small" style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.7); border-radius: 8px;">
-          <i class="fas fa-info-circle"></i> Los testimonios se guardan localmente y en nuestra base de datos.
-        </p>
-      </div>
-    </div>
-  </main>
-
-  <footer>
-    <div class="container">
-    <p class="small muted">© 2025 Qualified International Staff</p>
-      <div class="social-links">
-        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="mailto:jaider.grico@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Chat bubble CORREGIDO -->
-  <div class="chat-container">
-    <div id="chat-bubble" class="chat-bubble">
-      <i class="fas fa-comments"></i>
-    </div>
-    <div id="chat-window" class="chat-window">
-      <div class="chat-header">
-        <span>Asistente Virtual</span>
-        <button id="chat-close" class="chat-close"><i class="fas fa-times"></i></button>
-      </div>
-      <div id="chat-messages" class="chat-messages">
-        <div class="message bot-message">
-          <div class="message-content">
-            ¡Hola! ¿Te gustaría conocer las experiencias de nuestros clientes?
-          </div>
-          <div class="message-time">Justo ahora</div>
+    <!-- Testimonials Section -->
+    <section class="container">
+        <div class="card">
+            <h1>Testimonios de Nuestros Clientes</h1>
+            <p class="muted">Lo que dicen las empresas que han trabajado con nuestro staff remoto bilingüe</p>
+            
+            <div class="testimonial-chat" id="testimonials-list">
+                <!-- Los testimonios se cargarán dinámicamente aquí -->
+                <div class="testimonial-bubble staff">
+                    <div class="testimonial-author">Sistema</div>
+                    <div class="testimonial-text">Cargando testimonios...</div>
+                    <div class="testimonial-time">Justo ahora</div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="chat-input-container">
-        <input type="text" id="chat-input" placeholder="Escribe tu mensaje...">
-        <button id="chat-send" class="chat-send-btn">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
+    </section>
+
+    <!-- Add Testimonial Section -->
+    <section class="container">
+        <div class="card testimonial-form-card">
+            <h2>Comparte Tu Experiencia</h2>
+            <p class="muted">¿Has trabajado con nosotros? Cuéntanos tu experiencia para ayudar a otras empresas.</p>
+            
+            <form id="add-testimonial">
+                <div class="form-group">
+                    <label class="form-label" for="name">Tu Nombre (o empresa)</label>
+                    <input type="text" class="form-input" id="name" name="name" placeholder="Ej: María González - Legal Firm Inc." required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="email">Email (opcional)</label>
+                    <input type="email" class="form-input" id="email" name="email" placeholder="tu@empresa.com">
+                    <small class="muted small">Solo para verificación, no se mostrará públicamente</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="text">Tu Testimonio</label>
+                    <textarea class="form-input form-textarea" id="text" name="text" placeholder="Cuéntanos sobre tu experiencia trabajando con nuestro staff remoto..." required minlength="10" maxlength="500"></textarea>
+                    <small class="muted small">Mínimo 10 caracteres, máximo 500</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Enviar Testimonio
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="container">
+        <div class="card" style="text-align: center;">
+            <h2>¿Listo para Unirte a Nuestros Clientes Satisfechos?</h2>
+            <p class="muted" style="margin-bottom: 25px;">Contrata staff remoto bilingüe de alta calidad hoy mismo</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="contact.html" class="btn btn-primary">
+                    <i class="fas fa-calendar-check"></i> Contactar Ahora
+                </a>
+                <a href="services.html" class="btn btn-outline" style="color: var(--primary-blue); border-color: var(--primary-blue);">
+                    <i class="fas fa-concierge-bell"></i> Ver Servicios
+                </a>
+            </div>
+        </div>
+    </section>
+
+ <!-- Footer -->    
+<footer>
+        <div class="container">
+            <p class="footer-text">© 2025 Qualified International Staff — Built for bilingual remote teams.</p>
+            <div class="social-links">
+                <a href="https://linkedin.com/company/international-remote-staff" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://wa.me/1234567890" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://instagram.com/internationalremotestaff" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="mailto:jaider.grico@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chat Bot -->
+    <div class="chat-container">
+        <div class="chat-bubble" id="chat-bubble">
+            <i class="fas fa-comments"></i>
+        </div>
+        <div class="chat-window" id="chat-window">
+            <div class="chat-header">
+                <span>Asistente Virtual</span>
+                <button class="chat-close" id="chat-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        ¡Hola! ¿Te gustaría conocer las experiencias de otros clientes con nuestro servicio?
+                    </div>
+                    <div class="message-time">Justo ahora</div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Escribe tu mensaje...">
+                <button class="chat-send-btn" id="chat-send">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- CONTENEDOR DE NOTIFICACIONES - AÑADIR ESTO -->
-  <div id="notification-container" class="notification-container"></div>
-
-  <style>
-    .testimonial-form-card {
-      border-left: 4px solid var(--secondary-blue);
-    }
-  </style>
-
+    <script src="main.js"></script>
 </body>
 </html>

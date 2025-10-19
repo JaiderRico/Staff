@@ -1,4 +1,4 @@
-/* styles.css */
+/* styles.css - ESTILOS CONSOLIDADOS */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -54,6 +54,9 @@ nav {
   font-weight: 700;
   font-size: 1.4rem;
   color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .nav-container {
@@ -66,6 +69,7 @@ nav {
 .nav-icons {
   display: flex;
   gap: 20px;
+  position: relative;
 }
 
 .nav-icons a {
@@ -74,11 +78,58 @@ nav {
   transition: all 0.3s ease;
   padding: 8px;
   border-radius: 8px;
+  position: relative;
 }
 
 .nav-icons a:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
+}
+
+/* Tooltips para navegación */
+.nav-icons a::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.nav-icons a::before {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.nav-icons a:hover::after,
+.nav-icons a:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.nav-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: contain;
 }
 
 /* Hero Section */
@@ -633,6 +684,71 @@ footer .container {
   font-size: 1.2rem;
 }
 
+/* Contact Page Styles */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.contact-item {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  padding: 20px;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s ease;
+}
+
+.contact-item:hover {
+  transform: translateY(-5px);
+}
+
+.contact-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 1.2rem;
+}
+
+.contact-info {
+  flex: 1;
+}
+
+.contact-info strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-dark);
+}
+
+/* Estados de carga para el formulario */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-left: -10px;
+  margin-top: -10px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s ease infinite;
+}
+
 /* Animations */
 @keyframes fadeInUp {
   from {
@@ -683,6 +799,10 @@ footer .container {
   }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .hero {
@@ -714,73 +834,7 @@ footer .container {
     flex-direction: column;
     gap: 15px;
   }
-}
-/* Tooltips para navegación */
-.nav-icons {
-  position: relative;
-}
-
-.nav-icons a {
-  position: relative;
-}
-
-.nav-icons a::after {
-  content: attr(title);
-  position: absolute;
-  bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.nav-icons a::before {
-  content: '';
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-bottom-color: rgba(0, 0, 0, 0.8);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.nav-icons a:hover::after,
-.nav-icons a:hover::before {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Logo en el navbar */
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 700;
-  font-size: 1.4rem;
-  color: var(--white);
-}
-
-.nav-logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  object-fit: contain;
-}
-
-/* Responsive para móviles */
-@media (max-width: 768px) {
+  
   .brand {
     font-size: 1.2rem;
   }
@@ -789,4 +843,327 @@ footer .container {
     width: 28px;
     height: 28px;
   }
+  
+  .nav-icons {
+    gap: 15px;
+  }
+  
+  .nav-icons a {
+    font-size: 1.1rem;
+    padding: 6px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .contact-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .contact-icon {
+    align-self: center;
+  }
+  
+  .form-label {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 15px;
+  }
+  
+  .card {
+    padding: 20px 15px;
+    margin-bottom: 20px;
+  }
+  
+  .hero h1 {
+    font-size: 1.8rem;
+    line-height: 1.3;
+  }
+  
+  .hero p {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  .btn {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .hero-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .service-card {
+    padding: 20px 15px;
+  }
+  
+  .service-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
+  }
+  
+  .logos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .logo-item {
+    padding: 15px 10px;
+  }
+  
+  .logo-item i {
+    font-size: 1.5rem;
+  }
+  
+  .chat-window {
+    width: 100vw;
+    height: 100vh;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+  }
+  
+  .chat-bubble {
+    width: 50px;
+    height: 50px;
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .testimonial-bubble {
+    max-width: 90%;
+  }
+  
+  .contact-item {
+    padding: 15px;
+  }
+  
+  .form-input {
+    padding: 12px 14px;
+  }
+  
+  /* Mejorar navegación en móviles muy pequeños */
+  .nav-icons {
+    gap: 12px;
+  }
+  
+  .nav-icons a {
+    font-size: 1rem;
+    padding: 5px;
+  }
+  
+  .brand {
+    font-size: 1rem;
+  }
+}
+
+/* Asegurar que las imágenes sean responsivas */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Mejorar legibilidad en móviles */
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.3rem;
+  }
+}
+
+/* Estilos para el formulario de testimonios */
+.testimonial-form-card {
+  border-left: 4px solid var(--secondary-blue);
+}
+
+/* Estilos para mensajes personalizados */
+.custom-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #2196F3;
+  color: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 10000;
+  max-width: 300px;
+  animation: slideInRight 0.3s ease;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+.custom-message.success {
+  background: #4CAF50;
+}
+
+.custom-message.error {
+  background: #f44336;
+}
+
+.custom-message.info {
+  background: #2196F3;
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+/* Correcciones específicas para problemas identificados */
+
+/* Mejorar el círculo del icono de email en el footer */
+.social-links a {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    background: var(--primary-blue);
+    transform: translateY(-2px);
+}
+
+/* Asegurar que las imágenes se muestren correctamente */
+.hero-image img,
+.process-image img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+}
+
+/* Mejorar la sección de contacto */
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease;
+}
+
+.contact-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* Mejorar la navegación */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--white);
+}
+
+.nav-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+/* Correcciones responsive para el hero */
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        gap: 30px;
+    }
+    
+    .hero-image {
+        order: -1;
+    }
+    
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Mejorar los botones de contacto */
+.contact-info .btn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+/* Asegurar que los textos sean legibles */
+.muted {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Mejorar las tarjetas de servicios */
+.service-card {
+    text-align: center;
+    padding: 25px 20px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(30, 64, 175, 0.02));
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(30, 64, 175, 0.05));
+    transform: translateY(-5px);
+}
+
+.service-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    color: var(--white);
+    font-size: 1.5rem;
 }
