@@ -131,43 +131,54 @@ async function loadTestimonials() {
 
 
     // Guardar testimonio
-    async function saveTestimonial(name, text, email = '') {
-      console.log('💾 Guardando testimonio...');
-      const testimonialData = { name, text, email, source: 'website' };
+async function saveTestimonial(name, text, email = '') {
+  console.log('💾 Guardando testimonio...');
+  const testimonialData = { name, text, email, source: 'website' };
 
-      try {
-        const response = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(testimonialData)
-        });
+  try {
+    const response = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testimonialData)
+    });
 
-        const result = await response.json();
-        console.log('📥 Respuesta Sheets:', result);
-
-        if (result.status === 'success' || result.status === 'ignored') {
-          const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
-          const newTestimonial = {
-            id: Date.now(),
-            name,
-            text,
-            email,
-            timestamp: new Date().toISOString(),
-            status: 'Aprobado',
-            source: 'website'
-          };
-          cached.unshift(newTestimonial);
-          localStorage.setItem('testimonials_cache', JSON.stringify(cached));
-
-          return { success: true, message: '✅ ¡Gracias por tu testimonio!' };
-        } else {
-          throw new Error(result.message || 'Error desconocido');
-        }
-      } catch (error) {
-        console.error('❌ Error guardando:', error);
-        return { success: false, message: '❌ Error al guardar testimonio' };
-      }
+    const textResp = await response.text(); // leer raw primero
+    let result;
+    try {
+      result = JSON.parse(textResp);
+    } catch (err) {
+      console.warn('⚠️ Respuesta no JSON:', textResp);
+      throw new Error('Respuesta inesperada del servidor');
     }
+
+    console.log('📥 Respuesta del servidor:', result);
+
+    if (result.status === 'success' || result.status === 'ignored') {
+      // actualizar caché local
+      const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
+      const newTestimonial = {
+        id: Date.now(),
+        name,
+        text,
+        email,
+        timestamp: new Date().toISOString(),
+        status: result.status === 'ignored' ? 'Aprobado' : 'Aprobado',
+        source: 'website'
+      };
+      cached.unshift(newTestimonial);
+      localStorage.setItem('testimonials_cache', JSON.stringify(cached));
+
+      return { success: true, message: result.message || 'Guardado' };
+    } else {
+      throw new Error(result.message || 'Error desconocido al guardar');
+    }
+
+  } catch (error) {
+    console.error('❌ Error guardando testimonio:', error);
+    return { success: false, message: error.message || 'Error al guardar testimonio' };
+  }
+}
+
 
     // Mostrar testimonios
 function displayTestimonials(testimonials) {
