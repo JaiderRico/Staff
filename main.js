@@ -87,25 +87,96 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Chat inicializado correctamente');
   }
 
-  // ========== SISTEMA DE TESTIMONIOS ==========
-  function initializeTestimonials() {
-    const testimonialsList = document.getElementById('testimonials-list');
-    const testimonialForm = document.getElementById('add-testimonial');
+// ========== SISTEMA DE TESTIMONIOS ==========
+function initializeTestimonials() {
+  const testimonialsList = document.getElementById('testimonials-list');
+  const testimonialForm = document.getElementById('add-testimonial');
 
-    if (!testimonialsList) return;
+  if (!testimonialsList) return;
 
-    // ✅ Cargar testimonios solo desde caché local
-    function loadTestimonials() {
-      console.log('📥 Cargando testimonios desde almacenamiento local...');
-      const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
-      displayTestimonials(cached);
-      console.log('📝', cached.length, 'testimonios cargados');
-    }
+  // URL de tu Google Apps Script Web App (REEMPLAZA ESTA URL)
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxudhXW5dv0DjaeM11VjfhhmuYtLi58DEKtULVV_O1p0WZLjurCXOfca8YtwSrF48oA60/exec';
 
-    // ✅ Guardar testimonio solo en caché local
-    async function saveTestimonial(name, text, email = '') {
-      console.log('💾 Guardando en almacenamiento local...');
+  // ✅ Cargar testimonios desde Google Sheets Y caché local
+  async function loadTestimonials() {
+    console.log('📥 Cargando testimonios...');
+    
+    try {
+      // Intentar cargar desde Google Sheets
+      const response = await fetch(WEB_APP_URL);
+      const testimonialsFromSheets = await response.json();
       
+      if (Array.isArray(testimonialsFromSheets) && testimonialsFromSheets.length > 0) {
+        console.log('📊 Testimonios cargados desde Google Sheets:', testimonialsFromSheets.length);
+        displayTestimonials(testimonialsFromSheets);
+        
+        // Actualizar caché local
+        localStorage.setItem('testimonials_cache', JSON.stringify(testimonialsFromSheets));
+        return;
+      }
+    } catch (error) {
+      console.log('❌ Error cargando desde Google Sheets, usando caché local:', error);
+    }
+    
+    // Fallback a caché local
+    const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
+    console.log('📝 Usando testimonios de caché local:', cached.length);
+    displayTestimonials(cached);
+  }
+
+  // ✅ Guardar testimonio en Google Sheets Y caché local
+  async function saveTestimonial(name, text, email = '') {
+    console.log('💾 Guardando testimonio...');
+    
+    const testimonialData = {
+      name: name,
+      text: text,
+      email: email,
+      source: 'website'
+    };
+    
+    try {
+      // Enviar a Google Sheets
+      console.log('📤 Enviando a Google Sheets...');
+      const response = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(testimonialData)
+      });
+      
+      const result = await response.json();
+      console.log('📥 Respuesta de Google Sheets:', result);
+      
+      if (result.status === 'success') {
+        // También guardar en caché local
+        const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
+        const newTestimonial = {
+          id: Date.now(),
+          name: name,
+          text: text,
+          email: email,
+          timestamp: new Date().toISOString(),
+          status: 'Aprobado',
+          source: 'website'
+        };
+        
+        cached.unshift(newTestimonial);
+        localStorage.setItem('testimonials_cache', JSON.stringify(cached));
+        
+        return { 
+          success: true,
+          message: '✅ ¡Gracias por tu testimonio! Se ha guardado correctamente.' 
+        };
+      } else {
+        throw new Error(result.message || 'Error desconocido');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error guardando en Google Sheets:', error);
+      
+      // Fallback: guardar solo en caché local
       const cached = JSON.parse(localStorage.getItem('testimonials_cache') || '[]');
       const newTestimonial = {
         id: Date.now(),
@@ -122,117 +193,123 @@ document.addEventListener('DOMContentLoaded', function() {
       
       return { 
         success: true,
-        message: '✅ ¡Gracias por tu testimonio! Se ha guardado correctamente.' 
+        message: '✅ ¡Gracias por tu testimonio! Se ha guardado localmente (error temporal con el servidor).' 
       };
     }
+  }
 
-    function displayTestimonials(testimonials) {
-      testimonialsList.innerHTML = '';
+  function displayTestimonials(testimonials) {
+    testimonialsList.innerHTML = '';
+    
+    if (!testimonials || testimonials.length === 0) {
+      testimonialsList.innerHTML = `
+        <div class="testimonial-bubble staff">
+          <div class="testimonial-author">Sistema</div>
+          <div class="testimonial-text">Aún no hay testimonios. ¡Sé el primero en compartir tu experiencia!</div>
+          <div class="testimonial-time">Justo ahora</div>
+        </div>
+      `;
+      return;
+    }
+    
+    // Filtrar solo testimonios aprobados y ordenar por fecha (más recientes primero)
+    const approvedTestimonials = testimonials.filter(t => 
+      t.status === 'Aprobado' || !t.status // Incluir los que no tienen status definido
+    );
+    
+    approvedTestimonials.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    approvedTestimonials.forEach((testimonial, index) => {
+      const bubble = document.createElement('div');
+      bubble.className = `testimonial-bubble ${index % 2 === 0 ? 'client' : 'staff'}`;
       
-      if (!testimonials || testimonials.length === 0) {
-        testimonialsList.innerHTML = `
-          <div class="testimonial-bubble staff">
-            <div class="testimonial-author">Sistema</div>
-            <div class="testimonial-text">Aún no hay testimonios. ¡Sé el primero en compartir tu experiencia!</div>
-            <div class="testimonial-time">Justo ahora</div>
-          </div>
-        `;
+      const timeAgo = getTimeAgo(new Date(testimonial.timestamp));
+      
+      bubble.innerHTML = `
+        <div class="testimonial-author">${testimonial.name || 'Anónimo'}</div>
+        <div class="testimonial-text">${testimonial.text || ''}</div>
+        <div class="testimonial-time">${timeAgo}</div>
+      `;
+      
+      testimonialsList.appendChild(bubble);
+    });
+  }
+
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.round(diffMs / (1000 * 60));
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffMins < 1) return 'Ahora mismo';
+    if (diffMins < 60) return `Hace ${diffMins} min`;
+    if (diffHours < 24) return `Hace ${diffHours} horas`;
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} días`;
+    if (diffDays < 30) return `Hace ${Math.round(diffDays/7)} semanas`;
+    return `Hace ${Math.round(diffDays/30)} meses`;
+  }
+
+  // Manejar formulario de testimonios
+  if (testimonialForm) {
+    testimonialForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = testimonialForm.querySelector('[name="name"]').value.trim();
+      const text = testimonialForm.querySelector('[name="text"]').value.trim();
+      const emailInput = testimonialForm.querySelector('[name="email"]');
+      const email = emailInput ? emailInput.value.trim() : '';
+      
+      // Validaciones
+      if (!name || !text) {
+        showMessage('❌ Por favor completa nombre y testimonio', 'error');
         return;
       }
       
-      // Ordenar por fecha (más recientes primero)
-      testimonials.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      if (text.length < 10) {
+        showMessage('❌ El testimonio debe tener al menos 10 caracteres', 'error');
+        return;
+      }
       
-      testimonials.forEach((testimonial, index) => {
-        const bubble = document.createElement('div');
-        bubble.className = `testimonial-bubble ${index % 2 === 0 ? 'client' : 'staff'}`;
-        
-        const timeAgo = getTimeAgo(new Date(testimonial.timestamp));
-        
-        bubble.innerHTML = `
-          <div class="testimonial-author">${testimonial.name || 'Anónimo'}</div>
-          <div class="testimonial-text">${testimonial.text || ''}</div>
-          <div class="testimonial-time">${timeAgo}</div>
-        `;
-        
-        testimonialsList.appendChild(bubble);
-      });
-    }
-
-    function getTimeAgo(date) {
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMins = Math.round(diffMs / (1000 * 60));
-      const diffHours = Math.round(diffMs / (1000 * 60 * 60));
-      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+      if (text.length > 500) {
+        showMessage('❌ El testimonio es demasiado largo (máximo 500 caracteres)', 'error');
+        return;
+      }
       
-      if (diffMins < 1) return 'Ahora mismo';
-      if (diffMins < 60) return `Hace ${diffMins} min`;
-      if (diffHours < 24) return `Hace ${diffHours} horas`;
-      if (diffDays === 1) return 'Ayer';
-      if (diffDays < 7) return `Hace ${diffDays} días`;
-      if (diffDays < 30) return `Hace ${Math.round(diffDays/7)} semanas`;
-      return `Hace ${Math.round(diffDays/30)} meses`;
-    }
-
-    // Manejar formulario de testimonios
-    if (testimonialForm) {
-      testimonialForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      // Deshabilitar botón durante envío
+      const submitBtn = testimonialForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+      submitBtn.disabled = true;
+      
+      try {
+        const result = await saveTestimonial(name, text, email);
+        showMessage(result.message, 'success');
         
-        const name = testimonialForm.querySelector('[name="name"]').value.trim();
-        const text = testimonialForm.querySelector('[name="text"]').value.trim();
-        const emailInput = testimonialForm.querySelector('[name="email"]');
-        const email = emailInput ? emailInput.value.trim() : '';
+        // Limpiar formulario
+        testimonialForm.reset();
         
-        // Validaciones
-        if (!name || !text) {
-          showMessage('❌ Por favor completa nombre y testimonio', 'error');
-          return;
-        }
-        
-        if (text.length < 10) {
-          showMessage('❌ El testimonio debe tener al menos 10 caracteres', 'error');
-          return;
-        }
-        
-        if (text.length > 500) {
-          showMessage('❌ El testimonio es demasiado largo (máximo 500 caracteres)', 'error');
-          return;
-        }
-        
-        // Deshabilitar botón durante envío
-        const submitBtn = testimonialForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-        submitBtn.disabled = true;
-        
-        try {
-          const result = await saveTestimonial(name, text, email);
-          showMessage(result.message, 'success');
-          
-          // Limpiar formulario
-          testimonialForm.reset();
-          
-          // Recargar testimonios para mostrar el nuevo
+        // Recargar testimonios para mostrar el nuevo
+        setTimeout(() => {
           loadTestimonials();
-          
-        } catch (error) {
-          showMessage('❌ Error inesperado al guardar', 'error');
-          console.error('Error en submit:', error);
-        } finally {
-          // Restaurar botón
-          submitBtn.innerHTML = originalText;
-          submitBtn.disabled = false;
-        }
-      });
-    }
-
-    // Inicializar testimonios
-    loadTestimonials();
-    console.log('✅ Sistema de testimonios inicializado');
+        }, 1000);
+        
+      } catch (error) {
+        showMessage('❌ Error inesperado al guardar', 'error');
+        console.error('Error en submit:', error);
+      } finally {
+        // Restaurar botón
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
   }
 
+  // Inicializar testimonios
+  loadTestimonials();
+  console.log('✅ Sistema de testimonios inicializado');
+}
   // ========== SISTEMA DE FORMULARIO DE CONTACTO ==========
   function initializeContactForm() {
     const contactForm = document.getElementById('contact-form');
