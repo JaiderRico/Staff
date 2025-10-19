@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!testimonialsList) return;
 
     // 🔗 URL de tu Web App de Google Apps Script
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxudhXWSdvQDjaeM11VjfhhmuYtLi58DEKtULVV_OlpQW2LjurCXQfca8YtwSrF48oA6Q/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzKf6xNUE9ZIO_pKbG66vNji6_caR9DVyHJ05DAxtEYf8FMLDe9__64VD8JHvbhINko5w/exec';
 
     // Cargar testimonios
 async function loadTestimonials() {
