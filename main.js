@@ -146,36 +146,61 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Mostrar testimonios
-    function displayTestimonials(testimonials) {
-      testimonialsList.innerHTML = '';
-      if (!testimonials || testimonials.length === 0) {
-        testimonialsList.innerHTML = `
-          <div class="testimonial-bubble staff">
-            <div class="testimonial-author">Sistema</div>
-            <div class="testimonial-text">Aún no hay testimonios. ¡Sé el primero en compartir tu experiencia!</div>
-            <div class="testimonial-time">Justo ahora</div>
-          </div>`;
-        return;
-      }
+function displayTestimonials(testimonials) {
+  testimonialsList.innerHTML = '';
 
-      const approved = testimonials.filter(t => t.status === 'Aprobado' || !t.status);
-      approved.sort((a, b) => new Date(a.timestamp) < new Date(b.timestamp) ? 1 : -1);
+  // Si no hay testimonios válidos → mostrar mensaje vacío
+  if (!Array.isArray(testimonials) || testimonials.length === 0) {
+    testimonialsList.innerHTML = `
+      <div class="testimonial-empty">
+        <p>No hay testimonios disponibles por ahora.</p>
+      </div>
+    `;
+    return;
+  }
 
-      approved.forEach((t, index) => {
-        const bubble = document.createElement('div');
-        bubble.className = `testimonial-bubble ${index % 2 === 0 ? 'client' : 'staff'}`;
-        const dateStr = new Date(t.timestamp).toLocaleDateString('es-ES', {
-          year: 'numeric', month: 'short', day: 'numeric'
-        });
+  // Filtrar solo testimonios válidos
+  const approved = testimonials.filter(t => 
+    (t.status === 'Aprobado' || !t.status) && t.name && t.text
+  );
 
-        bubble.innerHTML = `
-          <div class="testimonial-author">${t.name || 'Anónimo'}</div>
-          <div class="testimonial-text">${t.text || ''}</div>
-          <div class="testimonial-time">${dateStr}</div>
-        `;
-        testimonialsList.appendChild(bubble);
-      });
-    }
+  if (approved.length === 0) {
+    testimonialsList.innerHTML = `
+      <div class="testimonial-empty">
+        <p>No hay testimonios aprobados disponibles.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Ordenar más recientes primero
+  approved.sort((a, b) => new Date(a.timestamp) < new Date(b.timestamp) ? 1 : -1);
+
+  approved.forEach((t, index) => {
+    const bubble = document.createElement('div');
+    bubble.className = `testimonial-bubble ${index % 2 === 0 ? 'client' : 'staff'}`;
+    const dateStr = formatDate(t.timestamp);
+
+    bubble.innerHTML = `
+      <div class="testimonial-author">${t.name || 'Anónimo'}</div>
+      <div class="testimonial-text">${t.text || ''}</div>
+      <div class="testimonial-time">${dateStr}</div>
+    `;
+    testimonialsList.appendChild(bubble);
+  });
+}
+
+// Función auxiliar para mostrar fecha válida
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+  if (isNaN(date)) return ''; // Evita “Invalid Date”
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
 
     // Envío del formulario
     if (testimonialForm) {
