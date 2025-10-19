@@ -761,3 +761,32 @@ footer .container {
   opacity: 1;
   visibility: visible;
 }
+
+/* Logo en el navbar */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--white);
+}
+
+.nav-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .brand {
+    font-size: 1.2rem;
+  }
+  
+  .nav-logo {
+    width: 28px;
+    height: 28px;
+  }
+}
