@@ -95,7 +95,7 @@ function initializeTestimonials() {
   if (!testimonialsList) return;
 
   // URL de tu Google Apps Script Web App (REEMPLAZA ESTA URL)
-  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxudhXW5dv0DjaeM11VjfhhmuYtLi58DEKtULVV_O1p0WZLjurCXOfca8YtwSrF48oA60/exec';
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxudhXWSdvQDjaeM11VjfhhmuYtLi58DEKtULVV_OlpQW2LjurCXQfca8YtwSrF48oA6Q/exec';
 
   // ✅ Cargar testimonios desde Google Sheets Y caché local
   async function loadTestimonials() {
